@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pre-Participation Screening & Risk Stratification Tool</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1e3a8a; 
+            --primary-hover: #1e40af;
+            --secondary-color: #f1f5f9; 
+            --accent-color: #ea580c; 
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --border-color: #e2e8f0;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 30px 20px; }
+        .app-container { width: 100%; max-width: 780px; display: flex; flex-direction: column; gap: 20px; }
+        
+        .app-header { text-align: center; margin-bottom: 10px; }
+        .app-header img { max-width: 100%; height: auto; margin-bottom: 25px; }
+        .app-header h1 { color: var(--primary-color); font-size: 1.75rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
+        .app-header p { color: var(--text-muted); font-size: 1rem; font-weight: 400; }
+
+        .progress-container { width: 100%; background-color: var(--border-color); border-radius: 10px; height: 6px; overflow: hidden; }
+        .progress-bar { height: 100%; background-color: var(--accent-color); width: 0%; transition: width 0.4s ease; }
+
+        .card { background-color: var(--card-bg); border-radius: 16px; padding: 40px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); border: 1px solid var(--border-color); min-height: 320px; display: flex; flex-direction: column; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .question-module { font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 1.2px; margin-bottom: 15px; display: block; }
+        .question-text { font-size: 1.25rem; font-weight: 600; color: var(--primary-color); margin-bottom: 25px; line-height: 1.4; }
+        .disclaimer-text { font-size: 0.95rem; background-color: var(--secondary-color); padding: 20px; border-left: 4px solid var(--accent-color); border-radius: 0 8px 8px 0; margin-bottom: 20px; }
+        .transition-box { background-color: #fffbeb; border: 1px solid #fde68a; padding: 20px; border-radius: 10px; margin-bottom: 25px; }
+
+        .options-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: auto; }
+        .option-label { display: flex; align-items: center; padding: 16px 20px; border: 2px solid var(--border-color); border-radius: 10px; cursor: pointer; transition: all 0.2s ease; font-weight: 500; font-size: 1.05rem; }
+        .option-label:hover { background-color: var(--secondary-color); border-color: #cbd5e1; }
+        .option-label input[type="radio"] { margin-right: 15px; width: 18px; height: 18px; accent-color: var(--primary-color); }
+        .option-label.selected { background-color: #f0fdf4; border-color: var(--success-color); color: #065f46; }
+
+        .controls { display: flex; justify-content: space-between; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+        .btn { padding: 12px 28px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background-color: var(--primary-color); color: #fff; margin-left: auto; }
+        .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+        .btn-secondary { background-color: var(--secondary-color); color: var(--text-main); }
+        .btn-secondary:hover { background-color: #e2e8f0; }
+        .hidden { display: none !important; }
+        .error { color: var(--danger-color); text-align: right; margin-top: 15px; font-size: 0.9rem; font-weight: 600; width: 100%; }
+
+        .result-section { margin-bottom: 30px; padding-bottom: 25px; border-bottom: 1px solid var(--border-color); }
+        .result-section:last-child { border-bottom: none; }
+        .result-title { font-size: 1.2rem; color: var(--primary-color); margin-bottom: 15px; font-weight: 700; }
+        .pathway-box { background-color: var(--secondary-color); padding: 18px; border-radius: 10px; font-size: 0.95rem; color: var(--text-main); margin-bottom: 20px; line-height: 1.6; }
+        .decision-box { padding: 18px; border-radius: 10px; font-weight: 600; font-size: 1.05rem; line-height: 1.5; margin-bottom: 15px; }
+        
+        .decision-clear { background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+        .decision-warn { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+        .decision-stop { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+        .holistic-box { font-size: 1.15rem; text-align: center; }
+
+        .app-footer { text-align: center; margin-top: 20px; font-size: 0.85rem; color: var(--text-muted); }
+
+        @media print {
+            body { background-color: #fff; padding: 0; }
+            .app-container { max-width: 100%; width: 100%; gap: 0; }
+            .no-print { display: none !important; }
+            .card { box-shadow: none; border: none; padding: 20px 0; }
+            .pathway-box { border: 1px solid var(--border-color); background-color: #f8fafc; }
+            .decision-box { border-width: 2px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <img src="image_ac9ab0.png" alt="European University Cyprus - Laboratory of Exercise, Health and Human Performance">
+            <h1>Pre-Participation Screening Tool</h1>
+            <p>Evidence-Based Risk Stratification (PAR-Q+ 2025 & ACSM)</p>
+        </header>
+
+        <div class="progress-container no-print">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <main class="card" id="card-container"></main>
+
+        <footer class="app-footer no-print">
+            <p>App Version 2.0 | Created by Dr. George Panayiotou</p>
+        </footer>
+    </div>
+
+    <script>
+        const initialQueue = [
+            { id: "intro", module: "Welcome & Medical Disclaimer", text: "Before we begin, please read the following disclaimer carefully.", type: "info", disclaimer: "This digital screening tool is provided strictly for educational and informational purposes, utilizing the internationally recognized PAR-Q+ (2025) and ACSM guidelines. It does not constitute, nor does it substitute for, professional medical advice, diagnosis, or personalized exercise prescription. Always consult a qualified healthcare provider before commencing any new exercise program." },
+            
+            // PAR-Q+ PART A (2025)
+            { id: "pqa1", module: "PAR-Q+ GENERAL HEALTH (Q1 of 7)", text: "Has your doctor ever said that you have a heart condition OR high blood pressure?", type: "binary", cat: "partA" },
+            { id: "pqa2", module: "PAR-Q+ GENERAL HEALTH (Q2 of 7)", text: "Do you feel pain in your chest at rest, during your daily activities of living, OR when you do physical activity?", type: "binary", cat: "partA" },
+            { id: "pqa3", module: "PAR-Q+ GENERAL HEALTH (Q3 of 7)", text: "Do you lose balance because of dizziness OR have you lost consciousness in the last 12 months?<br><br><span style='font-size:0.9rem; font-weight:400; color:#64748b;'>(Please answer NO if your dizziness was associated with over-breathing, including during vigorous exercise).</span>", type: "binary", cat: "partA" },
+            { id: "pqa4", module: "PAR-Q+ GENERAL HEALTH (Q4 of 7)", text: "Have you ever been diagnosed with another chronic medical condition (other than heart disease or high blood pressure)?", type: "binary", cat: "partA" },
+            { id: "pqa5", module: "PAR-Q+ GENERAL HEALTH (Q5 of 7)", text: "Are you currently taking prescribed medications for a chronic medical condition?", type: "binary", cat: "partA" },
+            { id: "pqa6", module: "PAR-Q+ GENERAL HEALTH (Q6 of 7)", text: "Do you currently have (or have had within the past 12 months) a bone, joint, or soft tissue (muscle, ligament, or tendon) problem that could be made worse by becoming more physically active?<br><br><span style='font-size:0.9rem; font-weight:400; color:#64748b;'>(Please answer NO if you had a problem in the past, but it does not limit your current ability to be physically active).</span>", type: "binary", cat: "partA" },
+            { id: "pqa7", module: "PAR-Q+ GENERAL HEALTH (Q7 of 7)", text: "Has your doctor ever said that you should only do medically supervised physical activity?", type: "binary", cat: "partA" },
+            
+            // ACSM Algorithm
+            { id: "acsm_bridge", module: "TRANSITION TO ACSM ALGORITHM", text: "You have completed the PAR-Q+ module.<br><br>We will now transition to the American College of Sports Medicine (ACSM) Preparticipation Health Screening algorithm.", type: "info" },
+            { id: "acsm1", module: "ACSM Algorithm (Step 1 of 3)", text: "Do you perform planned, structured physical activity for at least 30 minutes at moderate intensity on at least 3 days per week for at least the last 3 months?", type: "binary", cat: "acsm" },
+            { id: "acsm2", module: "ACSM Algorithm (Step 2 of 3)", text: "Do you have known cardiovascular, metabolic, or renal disease, OR do you experience any signs/symptoms suggestive of these diseases?", type: "binary", cat: "acsm" },
+            { id: "acsm3", module: "ACSM Algorithm (Step 3 of 3)", text: "What is your desired exercise intensity target?", type: "multi", options: ["Light Intensity", "Moderate Intensity", "Vigorous Intensity"], cat: "acsm" }
+        ];
+
+        const partBPool = [
+            { id: "pqb_bridge", module: "TRANSITION TO PAR-Q+ PART B", text: "", type: "info" },
+            { id: "pqb1", module: "PAR-Q+ PART B (Condition 1 of 10)", text: "Do you have Arthritis, Osteoporosis, or Back Problems?", type: "binary", sub: [
+                { id: "pqb1a", module: "PAR-Q+ PART B (Condition 1)", text: "1a. Do you have difficulty controlling your condition with medications or other physician-prescribed therapies?", type: "binary" },
+                { id: "pqb1b", module: "PAR-Q+ PART B (Condition 1)", text: "1b. Do you have joint problems causing pain, a recent fracture or fracture caused by osteoporosis or cancer, displaced vertebra, and/or spondylolysis/pars defect?", type: "binary" },
+                { id: "pqb1c", module: "PAR-Q+ PART B (Condition 1)", text: "1c. Have you had steroid injections or taken steroid tablets regularly for more than 3 months?", type: "binary" }
+            ]},
+            { id: "pqb2", module: "PAR-Q+ PART B (Condition 2 of 10)", text: "Do you currently have Cancer of any kind?", type: "binary", sub: [
+                { id: "pqb2a", module: "PAR-Q+ PART B (Condition 2)", text: "2a. Does your cancer diagnosis include any of the following types: lung/bronchogenic, multiple myeloma, head, and/or neck?", type: "binary" },
+                { id: "pqb2b", module: "PAR-Q+ PART B (Condition 2)", text: "2b. Are you currently receiving cancer therapy (such as chemotherapy or radiotherapy)?", type: "binary" }
+            ]},
+            { id: "pqb3", module: "PAR-Q+ PART B (Condition 3 of 10)", text: "Do you have a Heart or Cardiovascular Condition? (This includes Coronary Artery Disease, Heart Failure, Diagnosed Abnormality of Heart Rhythm)", type: "binary", sub: [
+                { id: "pqb3a", module: "PAR-Q+ PART B (Condition 3)", text: "3a. Do you have difficulty controlling your condition with medications or other physician-prescribed therapies?", type: "binary" },
+                { id: "pqb3b", module: "PAR-Q+ PART B (Condition 3)", text: "3b. Do you have an irregular heart beat that requires medical management?", type: "binary" },
+                { id: "pqb3c", module: "PAR-Q+ PART B (Condition 3)", text: "3c. Do you have chronic heart failure?", type: "binary" },
+                { id: "pqb3d", module: "PAR-Q+ PART B (Condition 3)", text: "3d. Do you have diagnosed coronary artery disease and have not participated in regular physical activity in the last 2 months?", type: "binary" }
+            ]},
+            { id: "pqb4", module: "PAR-Q+ PART B (Condition 4 of 10)", text: "Do you currently have High Blood Pressure?", type: "binary", sub: [
+                { id: "pqb4a", module: "PAR-Q+ PART B (Condition 4)", text: "4a. Do you have difficulty controlling your condition with medications or other physician-prescribed therapies?", type: "binary" },
+                { id: "pqb4b", module: "PAR-Q+ PART B (Condition 4)", text: "4b. Do you have a resting blood pressure equal to or greater than 160/90 mmHg with or without medication?", type: "binary" }
+            ]},
+            { id: "pqb5", module: "PAR-Q+ PART B (Condition 5 of 10)", text: "Do you have any Metabolic Conditions? (Includes Type 1, Type 2, Pre-Diabetes)", type: "binary", sub: [
+                { id: "pqb5a", module: "PAR-Q+ PART B (Condition 5)", text: "5a. Do you often have difficulty controlling your blood sugar levels with foods, medications, or other therapies?", type: "binary" },
+                { id: "pqb5b", module: "PAR-Q+ PART B (Condition 5)", text: "5b. Do you often suffer from signs and symptoms of low blood sugar (hypoglycemia) following exercise and/or during ADLs?", type: "binary" },
+                { id: "pqb5c", module: "PAR-Q+ PART B (Condition 5)", text: "5c. Do you have any signs or symptoms of diabetes complications such as heart or vascular disease and/or complications affecting your eyes, kidneys, OR the sensation in your toes and feet?", type: "binary" },
+                { id: "pqb5d", module: "PAR-Q+ PART B (Condition 5)", text: "5d. Do you have other metabolic conditions (such as current pregnancy-related diabetes, chronic kidney disease, or liver problems)?", type: "binary" },
+                { id: "pqb5e", module: "PAR-Q+ PART B (Condition 5)", text: "5e. Are you planning to engage in what for you is unusually high (or vigorous) intensity exercise in the near future?", type: "binary" }
+            ]},
+            { id: "pqb6", module: "PAR-Q+ PART B (Condition 6 of 10)", text: "Do you have any Mental Health Problems or Learning Difficulties? (Includes Alzheimer's, Dementia, Depression, Anxiety, Eating Disorder, etc.)", type: "binary", sub: [
+                { id: "pqb6a", module: "PAR-Q+ PART B (Condition 6)", text: "6a. Do you have difficulty controlling your condition with medications or other physician-prescribed therapies?", type: "binary" },
+                { id: "pqb6b", module: "PAR-Q+ PART B (Condition 6)", text: "6b. Do you have Down Syndrome AND back problems affecting nerves or muscles?", type: "binary" }
+            ]},
+            { id: "pqb7", module: "PAR-Q+ PART B (Condition 7 of 10)", text: "Do you have a Respiratory Disease? (Includes COPD, Asthma, Pulmonary High Blood Pressure)", type: "binary", sub: [
+                { id: "pqb7a", module: "PAR-Q+ PART B (Condition 7)", text: "7a. Do you have difficulty controlling your condition with medications or other physician-prescribed therapies?", type: "binary" },
+                { id: "pqb7b", module: "PAR-Q+ PART B (Condition 7)", text: "7b. Has your doctor ever said your blood oxygen level is low at rest or during exercise and/or that you require supplemental oxygen therapy?", type: "binary" },
+                { id: "pqb7c", module: "PAR-Q+ PART B (Condition 7)", text: "7c. If asthmatic, do you currently have symptoms of chest tightness, wheezing, laboured breathing, consistent cough, or have you used your rescue medication more than twice in the last week?", type: "binary" },
+                { id: "pqb7d", module: "PAR-Q+ PART B (Condition 7)", text: "7d. Has your doctor ever said you have high blood pressure in the blood vessels of your lungs?", type: "binary" }
+            ]},
+            { id: "pqb8", module: "PAR-Q+ PART B (Condition 8 of 10)", text: "Do you have a Spinal Cord Injury?", type: "binary", sub: [
+                { id: "pqb8a", module: "PAR-Q+ PART B (Condition 8)", text: "8a. Do you have difficulty controlling your condition with medications or other physician-prescribed therapies?", type: "binary" },
+                { id: "pqb8b", module: "PAR-Q+ PART B (Condition 8)", text: "8b. Do you commonly exhibit low resting blood pressure significant enough to cause dizziness, light-headedness, and/or fainting?", type: "binary" },
+                { id: "pqb8c", module: "PAR-Q+ PART B (Condition 8)", text: "8c. Has your physician indicated that you exhibit sudden bouts of high blood pressure (known as Autonomic Dysreflexia)?", type: "binary" }
+            ]},
+            { id: "pqb9", module: "PAR-Q+ PART B (Condition 9 of 10)", text: "Have you had a Stroke? (Includes TIA or Cerebrovascular Event)", type: "binary", sub: [
+                { id: "pqb9a", module: "PAR-Q+ PART B (Condition 9)", text: "9a. Do you have difficulty controlling your condition with medications or other physician-prescribed therapies?", type: "binary" },
+                { id: "pqb9b", module: "PAR-Q+ PART B (Condition 9)", text: "9b. Do you have any impairment in walking or mobility?", type: "binary" },
+                { id: "pqb9c", module: "PAR-Q+ PART B (Condition 9)", text: "9c. Have you experienced a stroke or impairment in nerves or muscles in the past 6 months?", type: "binary" }
+            ]},
+            { id: "pqb10", module: "PAR-Q+ PART B (Condition 10 of 10)", text: "Do you have any other medical condition not listed above or do you have two or more medical conditions?", type: "binary", sub: [
+                { id: "pqb10a", module: "PAR-Q+ PART B (Condition 10)", text: "10a. Have you experienced a blackout, fainted, or lost consciousness as a result of a head injury within the last 12 months OR have you had a diagnosed concussion within the last 12 months?", type: "binary" },
+                { id: "pqb10b", module: "PAR-Q+ PART B (Condition 10)", text: "10b. Do you have a medical condition that is not listed (such as epilepsy, neurological conditions, kidney problems)?", type: "binary" },
+                { id: "pqb10c", module: "PAR-Q+ PART B (Condition 10)", text: "10c. Do you currently live with two or more medical conditions?", type: "binary" }
+            ]}
+        ];
+
+        let activeQueue = [...initialQueue];
+        let currentStep = 0;
+        const userAnswers = {};
+        let partB_Activated = false;
+
+        const cardContainer = document.getElementById("card-container");
+        const progressBar = document.getElementById("progress-bar");
+
+        function init() { renderStep(); }
+
+        function checkPartATriggers() {
+            const parqAKeys = ["pqa1", "pqa2", "pqa3", "pqa4", "pqa5", "pqa6", "pqa7"];
+            const positiveAnswers = [];
+            parqAKeys.forEach((key, index) => {
+                if (userAnswers[key] === "Yes") {
+                    positiveAnswers.push(`Question ${index + 1}`);
+                }
+            });
+            return positiveAnswers;
+        }
+
+        function renderStep() {
+            const progress = (currentStep / activeQueue.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            if (currentStep >= activeQueue.length) { renderResults(); return; }
+
+            const q = activeQueue[currentStep];
+            
+            if (q.id === "acsm_bridge" && !partB_Activated) {
+                const positiveA = checkPartATriggers();
+                if (positiveA.length > 0) {
+                    partB_Activated = true;
+                    const bridgeText = `<div class="transition-box">
+                        <strong>IMPORTANT:</strong> You answered YES to at least one general health question (${positiveA.join(", ")}).<br><br>
+                        According to the official PAR-Q+ protocol, this requires you to complete the Follow-Up Questions (Part B) regarding specific medical conditions before moving forward.
+                        </div>`;
+                    partBPool[0].text = bridgeText;
+
+                    const acsmBridgeIndex = activeQueue.findIndex(item => item.id === "acsm_bridge");
+                    activeQueue.splice(acsmBridgeIndex, 0, ...partBPool);
+                    renderStep();
+                    return;
+                }
+            }
+
+            let htmlContent = `<span class="question-module">${q.module}</span>`;
+            htmlContent += `<h2 class="question-text">${q.text}</h2>`;
+
+            if (q.type === "info") {
+                if(q.disclaimer) htmlContent += `<div class="disclaimer-text">${q.disclaimer}</div>`;
+            } else if (q.type === "binary") {
+                htmlContent += `
+                    <div class="options-group">
+                        <label class="option-label ${userAnswers[q.id] === 'Yes' ? 'selected' : ''}">
+                            <input type="radio" name="${q.id}" value="Yes" ${userAnswers[q.id] === 'Yes' ? 'checked' : ''}> Yes
+                        </label>
+                        <label class="option-label ${userAnswers[q.id] === 'No' ? 'selected' : ''}">
+                            <input type="radio" name="${q.id}" value="No" ${userAnswers[q.id] === 'No' ? 'checked' : ''}> No
+                        </label>
+                    </div>`;
+            } else if (q.type === "multi") {
+                htmlContent += `<div class="options-group">`;
+                q.options.forEach(opt => {
+                    htmlContent += `
+                        <label class="option-label ${userAnswers[q.id] === opt ? 'selected' : ''}">
+                            <input type="radio" name="${q.id}" value="${opt}" ${userAnswers[q.id] === opt ? 'checked' : ''}> ${opt}
+                        </label>`;
+                });
+                htmlContent += `</div>`;
+            }
+
+            htmlContent += `
+                <div id="error-message" class="error hidden no-print">Please select an option to proceed.</div>
+                <nav class="controls no-print">
+                    <button id="btn-back" class="btn btn-secondary ${currentStep === 0 ? 'hidden' : ''}">Back</button>
+                    <button id="btn-next" class="btn btn-primary">${q.type === 'info' ? 'Continue' : 'Next'}</button>
+                </nav>
+            `;
+
+            cardContainer.innerHTML = htmlContent;
+
+            const btnNext = document.getElementById("btn-next");
+            const btnBack = document.getElementById("btn-back");
+            const errorMsg = document.getElementById("error-message");
+
+            if(q.type !== "info") {
+                const radios = document.querySelectorAll(`input[name="${q.id}"]`);
+                radios.forEach(radio => {
+                    radio.addEventListener("change", (e) => {
+                        document.querySelectorAll('.option-label').forEach(lbl => lbl.classList.remove('selected'));
+                        e.target.closest('.option-label').classList.add('selected');
+                    });
+                });
+            }
+
+            btnNext.addEventListener("click", () => {
+                if (q.type !== "info") {
+                    const selected = document.querySelector(`input[name="${q.id}"]:checked`);
+                    if (!selected) { errorMsg.classList.remove("hidden"); return; }
+                    userAnswers[q.id] = selected.value;
+
+                    if (q.sub && selected.value === "Yes") {
+                        const hasSubs = activeQueue.find(item => item.id === q.sub[0].id);
+                        if(!hasSubs) {
+                            activeQueue.splice(currentStep + 1, 0, ...q.sub);
+                        }
+                    } else if (q.sub && selected.value === "No") {
+                        q.sub.forEach(subQ => {
+                            const idx = activeQueue.findIndex(item => item.id === subQ.id);
+                            if(idx > -1) {
+                                activeQueue.splice(idx, 1);
+                                delete userAnswers[subQ.id];
+                            }
+                        });
+                    }
+                }
+                currentStep++; 
+                renderStep();
+            });
+
+            if(btnBack) {
+                btnBack.addEventListener("click", () => {
+                    if (currentStep > 0) { currentStep--; renderStep(); }
+                });
+            }
+        }
+
+        function renderResults() {
+            progressBar.style.width = "100%";
+
+            const parqAKeys = ["pqa1", "pqa2", "pqa3", "pqa4", "pqa5", "pqa6", "pqa7"];
+            const hasYesInA = parqAKeys.some(k => userAnswers[k] === "Yes");
+            
+            let hasYesInB_Sub = false;
+            Object.keys(userAnswers).forEach(key => {
+                if (key.match(/pqb\d+[a-z]/) && userAnswers[key] === "Yes") {
+                    hasYesInB_Sub = true;
+                }
+            });
+
+            let parqDecision = "";
+            let parqClass = "";
+            let parqRecommendations = "";
+
+            if (!hasYesInA) {
+                parqDecision = "Cleared for Physical Activity (PAR-Q+ Part A Passed).";
+                parqClass = "decision-clear";
+                parqRecommendations = `
+                    <ul style="text-align:left; padding-left:20px; font-weight:400; margin-top:10px;">
+                        <li>Start becoming much more physically active - start slowly and build up gradually.</li>
+                        <li>Follow Global Physical Activity Guidelines for your age.</li>
+                        <li>You may take part in a health and fitness appraisal.</li>
+                        <li>If you are over the age of 45 yr and NOT accustomed to regular vigorous to maximal effort exercise, consult a qualified exercise professional before engaging in this intensity of exercise.</li>
+                    </ul>`;
+            } else if (hasYesInA && !hasYesInB_Sub) {
+                parqDecision = "Cleared for Physical Activity (PAR-Q+ Part B Cleared).";
+                parqClass = "decision-clear";
+                parqRecommendations = `
+                    <ul style="text-align:left; padding-left:20px; font-weight:400; margin-top:10px;">
+                        <li>It is advised that you consult a qualified exercise professional to help you develop a safe and effective physical activity plan to meet your health needs.</li>
+                        <li>You are encouraged to start slowly and build up gradually - 20 to 60 minutes of low to moderate intensity exercise, 3-5 days per week including aerobic and muscle strengthening exercises.</li>
+                        <li>As you progress, you should aim to accumulate 150 minutes or more of moderate intensity physical activity per week.</li>
+                        <li>If you are over the age of 45 yr and NOT accustomed to regular vigorous to maximal effort exercise, consult a qualified exercise professional before engaging in this intensity of exercise.</li>
+                    </ul>`;
+            } else {
+                parqDecision = "Medical Clearance Required (PAR-Q+ Part B Flag).";
+                parqClass = "decision-stop";
+                parqRecommendations = `
+                    <div style="margin-top:10px; font-weight:500;">
+                        You should seek further information before becoming more physically active or engaging in a fitness appraisal. Complete the ePARmed-X+ online and/or visit a qualified exercise professional / physician.
+                    </div>`;
+            }
+
+            const delayWarnings = `
+                <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 10px 15px; margin-top: 15px; font-size: 0.9rem; text-align: left;">
+                    <strong>Delay becoming more active if:</strong><br>
+                    - You are currently experiencing a temporary illness (cold/fever). Wait until you feel better.<br>
+                    - You are pregnant (talk to health care practitioner first).<br>
+                    - Your health changes.
+                </div>
+            `;
+
+            const isExerciser = userAnswers.acsm1 === "Yes";
+            const hasDiseaseOrSymptoms = userAnswers.acsm2 === "Yes";
+            const intensity = userAnswers.acsm3;
+            
+            let acsmDecision = ""; 
+            let acsmClass = "";
+
+            if (hasDiseaseOrSymptoms) {
+                if (isExerciser) {
+                    if (intensity === "Vigorous Intensity") { 
+                        acsmDecision = "Medical Clearance RECOMMENDED before engaging in vigorous exercise."; 
+                        acsmClass = "decision-warn"; 
+                    } else { 
+                        acsmDecision = "Medical Clearance NOT necessarily required for moderate exercise, but highly recommended if symptoms are present. Discontinue exercise immediately if symptomatic."; 
+                        acsmClass = "decision-warn"; 
+                    }
+                } else { 
+                    acsmDecision = "Medical Clearance REQUIRED prior to initiating any exercise program."; 
+                    acsmClass = "decision-stop"; 
+                }
+            } else { 
+                acsmDecision = "Medical Clearance NOT required. You may safely proceed with your desired exercise program."; 
+                acsmClass = "decision-clear"; 
+            }
+
+            const parqPass = (!hasYesInA) || (hasYesInA && !hasYesInB_Sub);
+            const acsmPass = (acsmClass === "decision-clear");
+            
+            let holisticHtml = "";
+            if (parqPass && acsmPass) {
+                holisticHtml = `
+                    <div class="decision-box decision-clear holistic-box">
+                        <strong>HOLISTIC CLEARANCE GRANTED</strong><br>
+                        Both PAR-Q+ and ACSM algorithms indicate that medical clearance is not required. You may begin or continue your exercise program, ensuring progressive overload.
+                        <div style="margin-top:15px; font-size:0.95rem; text-align:left;">
+                            <strong>Helpful Resources & Guidelines:</strong>
+                            <ul style="margin-top:5px; padding-left:20px;">
+                                <li><a href="https://iris.who.int/server/api/core/bitstreams/faa83413-d89e-4be9-bb01-b24671aef7ca/content" target="_blank">World Health Organization (WHO) Guidelines</a></li>
+                                <li><a href="https://acsm.org/education-resources/trending-topics-resources/physical-activity-guidelines/" target="_blank">ACSM Physical Activity Guidelines</a></li>
+                                <li><a href="https://www.cdc.gov/physical-activity-basics/guidelines/adults.html" target="_blank">CDC Guidelines for Adults</a></li>
+                            </ul>
+                        </div>
+                    </div>`;
+            } else {
+                holisticHtml = `
+                    <div class="decision-box decision-stop holistic-box">
+                        <strong>MEDICAL CLEARANCE REQUIRED</strong><br>
+                        Based on the combined holistic analysis of PAR-Q+ and ACSM, you have flagged for one or more clinical risks. You must consult a healthcare professional or complete an ePARmed-X+ evaluation prior to initiating or progressing your exercise program.
+                    </div>`;
+            }
+
+            cardContainer.innerHTML = `
+                <div class="result-section">
+                    <h2 class="result-title">1. PAR-Q+ (2025) Assessment</h2>
+                    <div class="pathway-box">
+                        Part A (General Health) Triggered: <strong>${hasYesInA ? "Yes" : "No"}</strong><br>
+                        Part B (Follow-up) Triggered: <strong>${hasYesInA ? (hasYesInB_Sub ? "Failed/Flagged" : "Cleared") : "Not Required"}</strong>
+                    </div>
+                    <div class="decision-box ${parqClass}">
+                        ${parqDecision}
+                        ${parqRecommendations}
+                    </div>
+                    ${delayWarnings}
+                </div>
+                
+                <div class="result-section">
+                    <h2 class="result-title">2. ACSM Algorithm Assessment</h2>
+                    <div class="pathway-box">
+                        Current Exerciser: <strong>${isExerciser ? "Yes" : "No"}</strong> <br>
+                        Known Disease / Symptoms: <strong>${hasDiseaseOrSymptoms ? "Yes" : "No"}</strong> <br>
+                        Target Intensity: <strong>${intensity || "N/A"}</strong>
+                    </div>
+                    <div class="decision-box ${acsmClass}">${acsmDecision}</div>
+                </div>
+
+                <div class="result-section" style="border:none;">
+                    <h2 class="result-title" style="text-align:center; font-size:1.4rem;">Final Holistic Recommendation</h2>
+                    ${holisticHtml}
+                </div>
+
+                <div class="result-section no-print" style="text-align:center; margin-top:40px;">
+                    <button class="btn btn-primary" onclick="window.print()">Save PDF / Print Summary</button>
+                    <button class="btn btn-secondary" style="margin-left:15px;" onclick="location.reload()">Start Over</button>
+                </div>
+            `;
+        }
+
+        init();
+    </script>
+</body>
+</html>
